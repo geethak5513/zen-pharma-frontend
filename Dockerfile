@@ -1,5 +1,4 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -8,10 +7,12 @@ COPY src ./src
 COPY .env.production ./
 RUN npm run build
 
-# Stage 2: Serve with Nginx
-FROM nginx:1.25-alpine
+FROM nginx:stable-alpine
+RUN addgroup -g 1000 pharma \
+    && adduser -D -u 1000 -G pharma pharma
 COPY --from=builder /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-RUN addgroup -S pharma && adduser -S pharma -G pharma
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+COPY nginx.conf /etc/nginx/nginx.conf
+USER 1000:1000
+EXPOSE 8080
+ENTRYPOINT ["nginx"]
+CMD ["-g", "daemon off;"]
