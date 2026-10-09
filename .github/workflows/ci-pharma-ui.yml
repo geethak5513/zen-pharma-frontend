@@ -11,6 +11,7 @@ name: CI/CD — pharma-ui
 # PROD promotion → promote-prod.yml (workflow_dispatch)
 
 on:
+  workflow_dispatch:
   push:
     branches: [develop, 'release/**']
     paths:
